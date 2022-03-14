@@ -66,4 +66,4 @@ gem "react_on_rails", "13.0.2"
 
 gem "shakapacker", "6.1.1"
 
-gem "mini_racer", "~> 0.6.2"
+gem "mini_racer", platforms: :ruby

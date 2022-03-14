@@ -235,7 +235,7 @@ DEPENDENCIES
   capybara
   debug
   jbuilder
-  mini_racer (~> 0.6.2)
+  mini_racer
   puma (~> 5.0)
   rails (~> 7.0.2, >= 7.0.2.3)
   react_on_rails (= 13.0.2)
