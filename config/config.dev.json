@@ -1,0 +1,8 @@
+{
+  "wid_geo": {
+	  "endpoint": "http://localhost:3001"
+  },
+  "reference_images": {
+    "endpoint": "http://localhost:10001"
+  }
+}

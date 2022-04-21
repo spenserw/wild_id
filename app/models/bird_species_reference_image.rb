@@ -1,0 +1,2 @@
+class BirdSpeciesReferenceImage < ApplicationRecord
+end

@@ -1,7 +1,10 @@
 Rails.application.routes.draw do
-  get 'hello_world', to: 'hello_world#index'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Defines the root path route ("/")
-  # root "articles#index"
+  namespace :api, constraints: { format: 'json' } do
+    get '/birds/species(/:species_name)', to: 'birds#species'
+    get 'birds/families(/:family_name)', to: 'birds#families'
+  end
+  
+  get '*path', controller: :home, action: :index
 end

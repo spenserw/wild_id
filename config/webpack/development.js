@@ -5,7 +5,16 @@ const { devServer, inliningCss } = require('shakapacker');
 
 const webpackConfig = require('./webpackConfig');
 
+const { join } = require('path');
+
 const developmentEnvOnly = (clientWebpackConfig, _serverWebpackConfig) => {
+  clientWebpackConfig.resolve.alias = {
+	  images: join(process.cwd(), 'app', 'assets', 'images'),
+    geographies: join(process.cwd(), 'app', 'assets', 'geographies')
+  }
+
+  clientWebpackConfig.externals = { config: JSON.stringify(require('../config.dev.json')) };
+
   // plugins
   if (inliningCss) {
     // Note, when this is run, we're building the server and client bundles in separate processes.

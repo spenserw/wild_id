@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.0"
+ruby "2.7.2"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.0.2", ">= 7.0.2.3"
@@ -66,6 +66,17 @@ gem "react_on_rails", "13.0.2"
 
 gem "shakapacker", "6.1.1"
 
-gem "mini_racer", platforms: :ruby
+
+gem "pg", "~> 1.3"
 
 gem "net-http", "~> 0.2.0"
+
+gem "google_drive", "~> 3.0"
+
+gem "mini_racer", "~> 0.6.2"
+
+gem "flickr", "~> 2.0", :group => :development
+
+gem "dotenv-rails", "~> 2.7", :groups => [:development, :test]
+
+gem "aws-sdk-s3", "~> 1.113", :group => :development
