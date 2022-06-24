@@ -11,8 +11,33 @@ async function remote_fetch(path, params) {
   }
 }
 
-async function fetch_species_presence(family, state_fips, county_fips, seasons) {
-  return await remote_fetch('/birds/presence', { state: state_fips, county: county_fips, seasons, family });
+/* Example state = 09, county = 001, family = Falconidae
+{
+   "Falconidae" : {
+      "species" : {
+         "Falco columbarius" : {
+            "seasons" : [
+               "nonbreeding"
+            ]
+         },
+         "Falco peregrinus" : {
+            "seasons" : [
+               "breeding",
+               "nonbreeding",
+               "passage"
+            ]
+         },
+         "Falco sparverius" : {
+            "seasons" : [
+               "resident"
+            ]
+         }
+      }
+   }
+}
+*/
+async function fetch_species_presence(query) {
+  return await remote_fetch("/birds/presence", query);
 }
 
 async function fetch_given_species_distribution(scientific_name) {

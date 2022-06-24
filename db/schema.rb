@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_03_21_151942) do
+ActiveRecord::Schema[7.0].define(version: 2022_05_14_160950) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -21,6 +21,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_21_151942) do
     t.integer "species_count"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "curation_checksum", limit: 32, null: false
   end
 
   create_table "bird_species", force: :cascade do |t|
@@ -31,6 +32,8 @@ ActiveRecord::Schema[7.0].define(version: 2022_03_21_151942) do
     t.bigint "bird_family_id"
     t.uuid "primary_reference_image_id"
     t.uuid "gallery_reference_image_ids", array: true
+    t.string "curation_checksum", limit: 32, null: false
+    t.string "sound_gallery", array: true
     t.index ["bird_family_id"], name: "index_bird_species_on_bird_family_id"
   end
 

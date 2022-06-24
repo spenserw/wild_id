@@ -13,8 +13,8 @@ class Api::BirdsController < ApplicationController
     results = {}
     @species.each do |s|
       family = BirdFamily.find_by(id: s.bird_family_id).scientific_name
-      results[family] = { "species" => {} } if not results[family]
-      results[family]["species"][s.scientific_name] = s
+      results[family] = { 'species' => {} } unless results[family]
+      results[family]['species'][s.scientific_name] = s
     end
 
     render json: results
@@ -29,6 +29,11 @@ class Api::BirdsController < ApplicationController
       @families = BirdFamily.all.order(:scientific_name)
     end
 
-    render json: @families
+    results = {}
+    @families.each do |family|
+      results[family.scientific_name] = family
+    end
+
+    render json: results
   end
 end
