@@ -39,8 +39,9 @@ const BirdSpeciesContainer = styled.div`
   justify-content: flex-start;
 `;
 
-const submit_query = async (family, state_fips, county_fips, seasons, origin) => {
+const submit_query = async (species,family, state_fips, county_fips, seasons, origin) => {
   return await get_species_by_location(
+    species,
     family,
     state_fips,
     county_fips,
