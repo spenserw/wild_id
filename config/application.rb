@@ -16,6 +16,10 @@ module WildId
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # Treat lib/scrapers as a namespace-free container so
+    # lib/scrapers/plants/scraper.rb maps to Plants::Scraper.
+    Rails.autoloaders.main.collapse(Rails.root.join("lib/scrapers"))
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
