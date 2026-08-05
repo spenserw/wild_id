@@ -33,3 +33,7 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Local dataset / scraper artifacts
+/data/*
+!/data/.keep
+

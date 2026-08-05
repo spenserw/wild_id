@@ -1,13 +1,18 @@
 US_TAXA_ARTIFACT = "us_taxa".freeze
 
+def birdlife_data_dir
+  Rails.root.join("data", "birdlife")
+end
+
 def write_output(name, data)
   # sub whitespace with '_'
   filename = "#{name.gsub(/[^\w.]/, '_').downcase}.json"
-  File.write("#{File.dirname(__FILE__)}/#{filename}", data)
+  FileUtils.mkdir_p(birdlife_data_dir)
+  File.write(birdlife_data_dir.join(filename), data)
 end
 
 def load_taxa_dump
-  file = File.open(File.join(File.dirname(__FILE__), "#{US_TAXA_ARTIFACT}.json"))
+  file = File.open(birdlife_data_dir.join("#{US_TAXA_ARTIFACT}.json"))
   JSON.parse(file.read).with_indifferent_access
 end
 
@@ -51,14 +56,16 @@ namespace :birdlife do
   end
 
   task extract: :environment do
-    data_dir = File.join(File.dirname(__FILE__), "data")
-    esri_archive = File.join(File.dirname(__FILE__), "BOTW.7z")
-    esri_db_path = File.join(data_dir, "BOTW.gdb")
+    data_dir = birdlife_data_dir
+    esri_archive = data_dir.join("BOTW.7z")
+    esri_db_path = data_dir.join("BOTW.gdb")
 
     force = ENV["force"].present?
 
     birdlife_taxon_table = Bird::BirdLife::Taxon.table_name
     birdlife_distribution_table = Bird::BirdLife::Distribution.table_name
+
+    FileUtils.mkdir_p(data_dir)
 
     if !Dir.exist?(esri_db_path) || force
       `7z x -o#{data_dir} #{esri_archive}`
