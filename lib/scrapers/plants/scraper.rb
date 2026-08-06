@@ -73,6 +73,24 @@ module Plants
       output
     end
 
+    def self.enqueue_symbols_from(list_path)
+      require "csv"
+
+      symbols = CSV.read(list_path, headers: true)
+        .select { |row| row["Synonym Symbol"].to_s.strip.empty? }
+        .map { |row| row["Symbol"].to_s.strip.upcase }
+        .uniq
+        .reject(&:empty?)
+
+      puts "Enqueueing #{symbols.size} symbols from #{list_path.basename}"
+
+      symbols.each do |symbol|
+        Plants::ScrapeSymbolJob.perform_later(symbol)
+      end
+
+      puts "Done."
+    end
+
     def initialize(symbol, include_images: false)
       @symbol = symbol.to_s.upcase
       @include_images = include_images
