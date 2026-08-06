@@ -37,3 +37,6 @@
 /data/*
 !/data/.keep
 
+# Overmind
+/.overmind.sock
+

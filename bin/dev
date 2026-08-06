@@ -1,2 +1,34 @@
-#!/usr/bin/env ruby
-exec "./bin/rails", "server", *ARGV
+#!/usr/bin/env sh
+
+set -e
+
+cd "$(dirname "$0")/.."
+
+export PORT="${PORT:-3000}"
+
+# Let the debug gem allow remote connections,
+# but avoid loading until `debugger` is called
+export RUBY_DEBUG_OPEN="true"
+export RUBY_DEBUG_LAZY="true"
+
+# Postgres stays up independently of Overmind (console/tests still work after quit).
+if command -v docker >/dev/null 2>&1; then
+  docker compose up -d --wait db
+else
+  echo "docker not found; skipping Postgres. Ensure it is running on localhost:5432." >&2
+fi
+
+bin/rails db:prepare
+
+if command -v overmind >/dev/null 2>&1; then
+  # -D runs in the background (tmux). Use: overmind connect|status|restart|echo|quit
+  exec overmind start -D -f Procfile.dev "$@"
+fi
+
+if ! gem list foreman -i --silent; then
+  echo "Installing foreman..."
+  gem install foreman
+fi
+
+echo "overmind not found; falling back to foreman (foreground only)."
+exec foreman start -f Procfile.dev "$@"
