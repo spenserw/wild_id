@@ -60,6 +60,9 @@ Rails.application.configure do
   config.solid_queue.connects_to = { database: { writing: :queue } }
   config.solid_queue.logger = ActiveSupport::Logger.new(STDOUT)
 
+  # Mission Control is closed by default until credentials are set; open it locally.
+  config.mission_control.jobs.http_basic_auth_enabled = false
+
   # Highlight code that triggered redirect in logs.
   config.action_dispatch.verbose_redirect_logs = true
 

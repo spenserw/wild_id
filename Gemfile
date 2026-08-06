@@ -16,6 +16,8 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+# CSV parsing (stdlib removed from default gems in Ruby 3.4+)
+gem "csv", "~> 3.3"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -26,7 +28,7 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
 gem "solid_cache"
 gem "solid_queue"
-gem "solid_queue_dashboard", "~> 0.2.0"
+gem "mission_control-jobs", "~> 1.1"
 gem "solid_cable"
 
 # Reduces boot times through caching; required in config/boot.rb

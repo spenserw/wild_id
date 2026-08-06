@@ -49,11 +49,28 @@ module Plants
       Rails.root.join("data", "plants")
     end
 
+    def symbol_data_dir
+      self.class.data_dir.join("raw", @symbol)
+    end
+
+    def complete?
+      symbol_data_dir.join(".complete").exist?
+    end
+
     def self.pull_complete_list
       response = Net::HTTP.get_response(URI(COMPLETE_LIST))
       output = data_dir.join("plantlst.txt")
       FileUtils.mkdir_p(data_dir)
       File.binwrite(output, response.body)
+      output
+    end
+
+    def self.pull_state_list(state)
+      response = Net::HTTP.get_response(URI(self.state_list_url(state)))
+      output = data_dir.join("#{state}_plantlst.txt")
+      FileUtils.mkdir_p(data_dir)
+      File.binwrite(output, response.body)
+      output
     end
 
     def initialize(symbol, include_images: false)
@@ -62,7 +79,7 @@ module Plants
     end
 
     def scrape
-      FileUtils.mkdir_p(raw_dir)
+      FileUtils.mkdir_p(symbol_data_dir)
 
       profile = fetch_json(services_uri("/api/PlantProfile", symbol: @symbol))
       write_json("profile.json", profile)
@@ -70,13 +87,11 @@ module Plants
       plant_id = profile.fetch("Id")
       scrape_resources(profile, plant_id)
       download_distribution(plant_id) if profile["HasDistributionData"]
+
+      FileUtils.touch(symbol_data_dir.join(".complete"))
     end
 
     private
-
-    def raw_dir
-      self.class.data_dir.join("raw", @symbol)
-    end
 
     def scrape_resources(profile, plant_id)
       RESOURCES.each do |name, resource|
@@ -96,17 +111,21 @@ module Plants
         { MasterId: plant_id },
         accept: "text/csv"
       )
-      File.binwrite(raw_dir.join("distribution.csv"), csv)
+      File.binwrite(symbol_data_dir.join("distribution.csv"), csv)
     end
 
     def write_json(filename, data)
-      File.write(raw_dir.join(filename), JSON.pretty_generate(data))
+      File.write(symbol_data_dir.join(filename), JSON.pretty_generate(data))
     end
 
     def services_uri(path, query = {})
       uri = URI.join(SERVICES_ORIGIN, path)
       uri.query = URI.encode_www_form(query) if query.any?
       uri
+    end
+
+    def self.state_list_url(state)
+      URI("#{ORIGIN}/DocumentLibrary/Txt/#{state}_NRCS_csv.txt")
     end
 
     def fetch_json(uri)
