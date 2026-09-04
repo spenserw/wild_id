@@ -61,6 +61,9 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 
+  # Schema annotations on models [https://github.com/drwl/annotaterb]
+  gem "annotaterb"
+
   # Scraping
   gem "ferrum"
   gem "vessel"

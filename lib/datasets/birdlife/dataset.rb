@@ -1,125 +1,62 @@
-US_TAXA_ARTIFACT = "us_taxa".freeze
+module Datasets
+  module BirdLife
+    class Dataset
+      US_TAXA_ARTIFACT = "us_taxa".freeze
 
-def birdlife_data_dir
-  Rails.root.join("data", "birdlife")
-end
+      def self.birdlife_data_dir
+        Rails.root.join("data", "birdlife")
+      end
 
-def write_output(name, data)
-  # sub whitespace with '_'
-  filename = "#{name.gsub(/[^\w.]/, '_').downcase}.json"
-  FileUtils.mkdir_p(birdlife_data_dir)
-  File.write(birdlife_data_dir.join(filename), data)
-end
+      def self.artifact_path(name)
+        birdlife_data_dir.join("#{name}.json")
+      end
 
-def load_taxa_dump
-  file = File.open(birdlife_data_dir.join("#{US_TAXA_ARTIFACT}.json"))
-  JSON.parse(file.read).with_indifferent_access
-end
+      def self.load_bird_families(taxa_path)
+        puts "Importing bird families from #{taxa_path}..."
+        taxa = load_taxa_dump(taxa_path)
 
-namespace :birdlife do
-  namespace :artifact do
-    task :us_taxa do
-      us_species = Bird::BirdLife::Distribution.species_in_boundary("us50")
+        Bird::Family.transaction do
+          taxa[:families].each do |scientific_name, metadata|
+            Bird::Family.create!(
+              scientific_name: scientific_name,
+              common_name: metadata[:common_name],
+              count: metadata[:count]
+            )
 
-      taxonomy_data = {
-        species: {},
-        families: {},
-        count: 0
-      }
+            puts "Imported #{scientific_name}"
+          end
+        end
+      end
 
-      us_species.each do |s|
-        species_tax = Bird::BirdLife::Taxon.find_by(sisrecid: s.sisid)
-        family = species_tax.familyname
-        sci_name = species_tax.scientificname
+      def self.load_bird_species(taxa_path)
+        puts "Importing bird species from #{taxa_path}..."
+        taxa = load_taxa_dump(taxa_path)
 
-        # Update species family & total family count
-        taxonomy_data[:families][family] ||= {
-          common_name: species_tax.family,
-          species: {},
-          count: 0
-        }
-        taxonomy_data[:families][family][:count] += 1
+        Bird::Species.transaction do
+          taxa[:families].each do |family_name, family_data|
+            family_data[:species].each do |_, value|
+              scientific_name = value[:scientific_name]
+              puts "Importing species [#{scientific_name}]..."
 
-        taxonomy_data[:families][family][:species][sci_name] = {
-          scientific_name: sci_name,
-          common_name: species_tax.commonname
-        }
+              taxon = Bird::BirdLife::Taxon.find_by(scientificname: scientific_name)
+              Bird::Species.create!(
+                external_id: taxon.sisrecid,
+                scientific_name: scientific_name,
+                common_names: [ value[:common_name] ],
+                bird_family: Bird::Family.find_by(scientific_name: family_name)
+              )
+            end
+          end
+        end
+      end
 
-        write_output("us_taxa", taxonomy_data)
+      class << self
+        private
+
+        def load_taxa_dump(path)
+          JSON.parse(File.read(path)).with_indifferent_access
+        end
       end
     end
   end
-
-  task cleanup: :environment do
-    BirdSpecies.destroy_all
-    BirdFamily.destroy_all
-  end
-
-  task extract: :environment do
-    data_dir = birdlife_data_dir
-    esri_archive = data_dir.join("BOTW.7z")
-    esri_db_path = data_dir.join("BOTW.gdb")
-
-    force = ENV["force"].present?
-
-    birdlife_taxon_table = Bird::BirdLife::Taxon.table_name
-    birdlife_distribution_table = Bird::BirdLife::Distribution.table_name
-
-    FileUtils.mkdir_p(data_dir)
-
-    if !Dir.exist?(esri_db_path) || force
-      `7z x -o#{data_dir} #{esri_archive}`
-    else
-      # If we've already extracted, skip this step.
-      puts("Birdlife already extracted, skipping. Use --force to override...")
-    end
-
-    ogr2ogr_cmd = Rails.configuration.x.datasets[:constants][:OGR2OGR_CMD]
-    pg_db = Rails.configuration.database_configuration[Rails.env]
-    pg_db_name = pg_db[:database]
-    pg_db_user = pg_db[:username]
-    pg_conn = "dbname='#{pg_db_name}' user='#{pg_db_user}'"
-    # Extract taxonomic checklist (contains db specific IDs)
-    if !ActiveRecord::Base.connection.data_source_exists?(birdlife_taxon_table) || force
-      `#{ogr2ogr_cmd} PG:"#{pg_conn}" #{esri_db_path} -nln #{birdlife_taxon_table} BirdLife_Taxonomic_Checklist_V5`
-    else
-      puts("Birdlife taxonomy already exported, skipping. Use --force to override...")
-    end
-
-    # Extract distribution data ==> Postgres
-    if !ActiveRecord::Base.connection.data_source_exists?(birdlife_distribution_table) || force
-      `#{ogr2ogr_cmd} PG:"#{pg_conn}" #{esri_db_path} -nln #{birdlife_distribution_table} -nlt 'MULTIPOLYGON' All_Species`
-    else
-      puts("Birdlife distributions already exported, skipping. Use --force to override...")
-    end
-  end
-
-  task load_us_bird_families: :environment do
-    puts "Importing bird families..."
-    taxa = load_taxa_dump
-
-    Bird::Family.transaction do
-      taxa[:families].each do |scientific_name, metadata|
-        Bird::Family.create!(
-          scientific_name: scientific_name,
-          common_name: metadata[:common_names],
-          count: v[:count]
-        )
-
-        puts "Imported #{k}"
-      end
-    end
-  end
-
-  task load_us_bird_species: :environment do
-    puts "Importing bird species..."
-    taxa = load_taxa_dump
-
-    # TODO: Finish implementing
-    Bird::Species.transaction do
-      taxa[:families]
-    end
-  end
-
-  task import: [ :cleanup, :extract, "artifact:us_taxa" ]
 end

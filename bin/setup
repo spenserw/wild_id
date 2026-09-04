@@ -7,6 +7,22 @@ def system!(*args)
   system(*args, exception: true)
 end
 
+def command?(name)
+  system("which", name, out: File::NULL, err: File::NULL)
+end
+
+def ensure_commands!(*names)
+  missing = names.reject { |name| command?(name) }
+  return if missing.empty?
+
+  puts "Missing required command(s): #{missing.join(", ")}"
+  puts "Install hints:"
+  puts "  Arch:   sudo pacman -S gdal 7zip"
+  puts "  macOS:  brew install gdal p7zip"
+  puts "  Debian: sudo apt install gdal-bin p7zip-full"
+  abort
+end
+
 FileUtils.chdir APP_ROOT do
   # This script is a way to set up or update your development environment automatically.
   # This script is idempotent, so that you can run it at any time and get an expectable outcome.
@@ -14,6 +30,16 @@ FileUtils.chdir APP_ROOT do
 
   puts "== Installing dependencies =="
   system("bundle check") || system!("bundle install")
+
+  puts "\n== Checking system dependencies =="
+  ensure_commands!("ogr2ogr", "7z")
+
+  puts "\n== Starting Postgres =="
+  if command?("docker")
+    system! "docker", "compose", "up", "-d", "--wait", "db"
+  else
+    puts "docker not found; ensure Postgres is running on localhost:5432."
+  end
 
   # puts "\n== Copying sample files =="
   # unless File.exist?("config/database.yml")
