@@ -1,3 +1,5 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
 # == Schema Information
 #
 # Table name: families
@@ -10,12 +12,12 @@
 #  updated_at      :datetime         not null
 #  external_id     :text
 #
-module Bird
-  class Family < ::Family
-    has_many :genuses,
-      class_name: "Bird::Species",
-      inverse_of: :family
+one:
+  scientific_name: MyText
+  common_names: MyText
+  external_id: MyText
 
-    has_many :species, through: :genuses
-  end
-end
+two:
+  scientific_name: MyText
+  common_names: MyText
+  external_id: MyText

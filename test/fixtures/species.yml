@@ -1,3 +1,5 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
 # == Schema Information
 #
 # Table name: species
@@ -19,12 +21,14 @@
 #
 #  fk_rails_...  (genus_id => genuses.id)
 #
-module Bird
-  class Species < ::Species
-    belongs_to :genus,
-      class_name: "Bird::Genus",
-      inverse_of: :species
+one:
+  scientific_name: MyText
+  common_names: MyText
+  genus: one
+  external_id: MyText
 
-    has_one :family, through: :genus
-  end
-end
+two:
+  scientific_name: MyText
+  common_names: MyText
+  genus: two
+  external_id: MyText

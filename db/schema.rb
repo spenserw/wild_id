@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_15_170249) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_05_185200) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
@@ -33,5 +33,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_170249) do
     t.index ["bird_family_id"], name: "index_bird_species_on_bird_family_id"
   end
 
+  create_table "families", force: :cascade do |t|
+    t.text "common_names", default: [], array: true
+    t.datetime "created_at", null: false
+    t.text "external_id"
+    t.text "scientific_name"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "genuses", force: :cascade do |t|
+    t.text "common_names", default: [], array: true
+    t.datetime "created_at", null: false
+    t.text "external_id"
+    t.bigint "family_id", null: false
+    t.text "scientific_name"
+    t.datetime "updated_at", null: false
+    t.index ["family_id"], name: "index_genuses_on_family_id"
+  end
+
+  create_table "species", force: :cascade do |t|
+    t.text "common_names", default: [], array: true
+    t.datetime "created_at", null: false
+    t.text "external_id"
+    t.bigint "genus_id", null: false
+    t.text "scientific_name"
+    t.datetime "updated_at", null: false
+    t.index ["genus_id"], name: "index_species_on_genus_id"
+  end
+
   add_foreign_key "bird_species", "bird_families"
+  add_foreign_key "genuses", "families"
+  add_foreign_key "species", "genuses", column: "genus_id"
 end

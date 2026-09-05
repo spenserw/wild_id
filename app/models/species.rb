@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: families
+# Table name: species
 # Database name: primary
 #
 #  id              :bigint           not null, primary key
@@ -9,13 +9,15 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  external_id     :text
+#  genus_id        :bigint           not null
 #
-module Bird
-  class Family < ::Family
-    has_many :genuses,
-      class_name: "Bird::Species",
-      inverse_of: :family
-
-    has_many :species, through: :genuses
-  end
+# Indexes
+#
+#  index_species_on_genus_id  (genus_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (genus_id => genuses.id)
+#
+class Species < ApplicationRecord
 end

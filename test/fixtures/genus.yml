@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  scientific_name: MyText
+  common_names: MyText
+  family: one
+  external_id: MyText
+
+two:
+  scientific_name: MyText
+  common_names: MyText
+  family: two
+  external_id: MyText

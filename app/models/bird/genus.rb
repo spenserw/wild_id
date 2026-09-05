@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: species
+# Table name: genuses
 # Database name: primary
 #
 #  id              :bigint           not null, primary key
@@ -9,22 +9,24 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  external_id     :text
-#  genus_id        :bigint           not null
+#  family_id       :bigint           not null
 #
 # Indexes
 #
-#  index_species_on_genus_id  (genus_id)
+#  index_genuses_on_family_id  (family_id)
 #
 # Foreign Keys
 #
-#  fk_rails_...  (genus_id => genuses.id)
+#  fk_rails_...  (family_id => families.id)
 #
 module Bird
-  class Species < ::Species
-    belongs_to :genus,
-      class_name: "Bird::Genus",
-      inverse_of: :species
+  class Genus < ::Genus
+    belongs_to :family,
+      class_name: "Bird::Family",
+      inverse_of: :genuses
 
-    has_one :family, through: :genus
+    has_many :species,
+      class_name: "Bird:Species",
+      inverse_of: :genus
   end
 end

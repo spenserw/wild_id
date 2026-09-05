@@ -1,3 +1,5 @@
+require "test_helper"
+
 # == Schema Information
 #
 # Table name: families
@@ -10,12 +12,8 @@
 #  updated_at      :datetime         not null
 #  external_id     :text
 #
-module Bird
-  class Family < ::Family
-    has_many :genuses,
-      class_name: "Bird::Species",
-      inverse_of: :family
-
-    has_many :species, through: :genuses
-  end
+class FamilyTest < ActiveSupport::TestCase
+  # test "the truth" do
+  #   assert true
+  # end
 end

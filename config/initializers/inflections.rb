@@ -14,4 +14,6 @@
 ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.acronym "BirdLife"
   inflect.acronym "OGR"
+
+  inflect.plural "genus", "genuses"
 end
