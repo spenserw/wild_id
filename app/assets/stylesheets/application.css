@@ -1,10 +1,135 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+:root {
+  --primary-color: #fff;
+  --background-color: #8ac05c;
+  --secondary-color: #729e5d;
+  --accent-color: #fff5e8;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.navigation {
+  background-color: var(--background-color);
+  color: var(--accent-color);
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+}
+
+.main-header {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1rem solid var(--accent-color);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.main-nav a {
+  display: block;
+  line-height: 64px;
+  padding: 0 8px;
+
+  text-decoration: none;
+  color: var(--accent-color);
+}
+
+.main-nav a:hover {
+  color: #d9f2c3;
+}
+
+.main-nav .disabled a {
+  color: rgba(255, 255, 255, 0.5);
+  cursor: not-allowed;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-item[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 8px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.main-footer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  border-top: 2.5rem solid var(--accent-color);
+
+  padding-top: 1.5rem;
+  height: 124px;
+
+  .copyright-column {
+  }
+
+  .flex-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.5rem;
+
+    .item {
+      text-align: start;
+    }
+
+    &.copyright {
+      grid-column: 1;
+
+      margin-left: 1rem;
+    }
+
+    &.nav {
+      grid-column: 2;
+    }
+
+    &.info {
+      grid-column: 3;
+    }
+
+    &.tool {
+      grid-column: 4;
+    }
+  }
+}

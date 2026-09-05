@@ -22,7 +22,7 @@ bin/rails db:prepare
 
 if command -v overmind >/dev/null 2>&1; then
   # -D runs in the background (tmux). Use: overmind connect|status|restart|echo|quit
-  exec overmind start -D -f Procfile.dev "$@"
+  exec overmind start -f Procfile.dev "$@"
 fi
 
 if ! gem list foreman -i --silent; then

@@ -9,6 +9,10 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <%= yield :head %>
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
@@ -24,6 +28,41 @@
   </head>
 
   <body>
-    <%= yield %>
+    <header class="navigation main-header">
+      <%= link_to root_path do %>
+        <div class="logo">
+          <%= image_tag "wild_id_logo_draft1.png", height: 32, alt: "WildID" %>
+        </div>
+      <% end %>
+
+      <nav class="main-nav">
+        <%= link_to "Birds", birds_path %>
+
+        <span class="nav-item disabled" data-tooltip="Coming soon!">
+          <%= link_to "Plants", "/", tabindex: "-1", aria: { disabled: true } %>
+        </span>
+      </nav>
+    </header>
+
+    <main>
+      <%= yield %>
+    </main>
+
+    <footer class="navigation main-footer">
+      <div class="flex-column copyright">
+        <span class="item">©2026 WildID</span>
+      </div>
+      <div class="flex-column nav">
+        <span class="item"><%= link_to "Birds", birds_path %></span>
+        <span class="item"><%= link_to "Plants", root_path %></span>
+      </div>
+      <div class="flex-column info">
+        <span class="item"><%= link_to "About", root_path %></span>
+        <span class="item"><%= link_to "Data sources", root_path %></span>
+      </div>
+      <div class="flex-column tool">
+        <span class="item"><%= link_to "Back to top", root_path %></span>
+      </div>
+    </footer>
   </body>
 </html>
