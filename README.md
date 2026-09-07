@@ -31,9 +31,10 @@ app/
 ├── jobs/
 │   └── plants/scrape_symbol_job.rb  # USDA plant scraping
 └── models/
-    ├── family.rb, genus.rb, species.rb  # Base taxonomy
+    ├── taxonomic_class.rb       # Base class (e.g. Aves)
+    ├── order.rb, family.rb, genus.rb, species.rb  # Base taxonomy
     └── bird/
-        ├── family.rb, genus.rb, species.rb  # Bird taxonomy (STI)
+        ├── order.rb, family.rb, genus.rb, species.rb  # Bird taxonomy (STI)
         └── birdlife/
             ├── taxon.rb         # BirdLife checklist data
             └── distribution.rb  # Species range polygons
