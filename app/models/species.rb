@@ -17,7 +17,7 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (genus_id => genuses.id)
+#  fk_rails_...  (genus_id => genera.id)
 #
 class Species < ApplicationRecord
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_07_022741) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_07_140440) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
@@ -56,6 +56,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_022741) do
     t.string "tribe", limit: 255
   end
 
+# Could not dump table "counties" because of following StandardError
+#   Unknown type 'geometry(MultiPolygon,4326)' for column 'wkb_geometry'
+
+
   create_table "families", force: :cascade do |t|
     t.text "common_names", default: [], array: true
     t.datetime "created_at", null: false
@@ -66,14 +70,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_022741) do
     t.index ["order_id"], name: "index_families_on_order_id"
   end
 
-  create_table "genuses", force: :cascade do |t|
+  create_table "genera", force: :cascade do |t|
     t.text "common_names", default: [], array: true
     t.datetime "created_at", null: false
     t.text "external_id"
     t.bigint "family_id", null: false
     t.text "scientific_name"
     t.datetime "updated_at", null: false
-    t.index ["family_id"], name: "index_genuses_on_family_id"
+    t.index ["family_id"], name: "index_genera_on_family_id"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -102,9 +106,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_022741) do
     t.datetime "updated_at", null: false
   end
 
+# Could not dump table "us_boundary" because of following StandardError
+#   Unknown type 'geometry' for column 'geometry'
+
+
   add_foreign_key "bird_species", "bird_families"
   add_foreign_key "families", "orders"
-  add_foreign_key "genuses", "families"
+  add_foreign_key "genera", "families"
   add_foreign_key "orders", "taxonomic_classes"
-  add_foreign_key "species", "genuses", column: "genus_id"
+  add_foreign_key "species", "genera"
 end

@@ -2,7 +2,7 @@ require "test_helper"
 
 # == Schema Information
 #
-# Table name: genuses
+# Table name: genera
 # Database name: primary
 #
 #  id              :bigint           not null, primary key
@@ -15,7 +15,7 @@ require "test_helper"
 #
 # Indexes
 #
-#  index_genuses_on_family_id  (family_id)
+#  index_genera_on_family_id  (family_id)
 #
 # Foreign Keys
 #
