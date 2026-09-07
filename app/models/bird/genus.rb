@@ -26,7 +26,7 @@ module Bird
       inverse_of: :genuses
 
     has_many :species,
-      class_name: "Bird:Species",
+      class_name: "Bird::Species",
       inverse_of: :genus
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_05_185200) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_07_022741) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
@@ -33,12 +33,37 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_185200) do
     t.index ["bird_family_id"], name: "index_bird_species_on_bird_family_id"
   end
 
+# Could not dump table "birdlife_distributions" because of following StandardError
+#   Unknown type 'geometry(MultiPolygon,4326)' for column 'shape'
+
+
+  create_table "birdlife_taxonomy", primary_key: "objectid", id: :serial, force: :cascade do |t|
+    t.string "alternativecommonnames", limit: 255
+    t.string "authority", limit: 255
+    t.string "birdlifetaxonomy", limit: 255
+    t.string "commonname", limit: 255
+    t.string "family", limit: 255
+    t.string "familyname", limit: 255
+    t.string "order_", limit: 255
+    t.string "redlistcategory_2020", limit: 255
+    t.string "scientificname", limit: 255
+    t.float "sequence"
+    t.float "sisrecid"
+    t.string "subfamily", limit: 255
+    t.string "synonyms", limit: 255
+    t.string "taxonomicnotes", limit: 255
+    t.binary "taxonomicsource"
+    t.string "tribe", limit: 255
+  end
+
   create_table "families", force: :cascade do |t|
     t.text "common_names", default: [], array: true
     t.datetime "created_at", null: false
     t.text "external_id"
+    t.bigint "order_id"
     t.text "scientific_name"
     t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_families_on_order_id"
   end
 
   create_table "genuses", force: :cascade do |t|
@@ -51,6 +76,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_185200) do
     t.index ["family_id"], name: "index_genuses_on_family_id"
   end
 
+  create_table "orders", force: :cascade do |t|
+    t.text "common_names", default: [], array: true
+    t.datetime "created_at", null: false
+    t.text "scientific_name"
+    t.bigint "taxonomic_class_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["taxonomic_class_id"], name: "index_orders_on_taxonomic_class_id"
+  end
+
   create_table "species", force: :cascade do |t|
     t.text "common_names", default: [], array: true
     t.datetime "created_at", null: false
@@ -61,7 +95,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_05_185200) do
     t.index ["genus_id"], name: "index_species_on_genus_id"
   end
 
+  create_table "taxonomic_classes", force: :cascade do |t|
+    t.text "common_names", default: [], array: true
+    t.datetime "created_at", null: false
+    t.text "scientific_name"
+    t.datetime "updated_at", null: false
+  end
+
   add_foreign_key "bird_species", "bird_families"
+  add_foreign_key "families", "orders"
   add_foreign_key "genuses", "families"
+  add_foreign_key "orders", "taxonomic_classes"
   add_foreign_key "species", "genuses", column: "genus_id"
 end

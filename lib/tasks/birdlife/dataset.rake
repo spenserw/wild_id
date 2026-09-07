@@ -5,9 +5,23 @@ namespace :birdlife do
     Bird::Family.destroy_all
   end
 
+  desc "Import US bird orders from the us_taxa artifact"
+  task load_us_bird_orders: :environment do
+    Datasets::BirdLife::Dataset.load_bird_orders(
+      Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
+    )
+  end
+
   desc "Import US bird families from the us_taxa artifact"
   task load_us_bird_families: :environment do
     Datasets::BirdLife::Dataset.load_bird_families(
+      Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
+    )
+  end
+
+  desc "Import US bird genuses from the us_taxa artifact"
+  task load_us_bird_genuses: :environment do
+    Datasets::BirdLife::Dataset.load_bird_genuses(
       Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
     )
   end
@@ -24,7 +38,9 @@ namespace :birdlife do
     :cleanup,
     "artifacts:extract",
     "artifacts:us_taxa",
+    :load_us_bird_orders,
     :load_us_bird_families,
+    :load_us_bird_genuses,
     :load_us_bird_species
   ]
 
@@ -78,30 +94,44 @@ namespace :birdlife do
       us_species = Bird::BirdLife::Distribution.species_in_boundary("us50")
 
       taxonomy_data = {
-        species: {},
-        families: {},
-        count: 0
+        orders: {},
+        count: 0,
+        total_species_count: 0
       }
 
       us_species.each do |s|
         species_tax = Bird::BirdLife::Taxon.find_by(sisrecid: s.sisid)
+        order = species_tax.order_
         family = species_tax.familyname
         sci_name = species_tax.scientificname
 
-        # Update species family & total family count
-        taxonomy_data[:families][family] ||= {
+        taxonomy_data[:count] += 1 unless taxonomy_data[:orders][order].present?
+        order_hash = taxonomy_data[:orders][order] ||= {
+          families: {},
+          count: 0
+        }
+
+        order_hash[:count] += 1 unless order_hash[:families][family].present?
+        family_hash = taxonomy_data[:orders][order][:families][family] ||= {
           common_name: species_tax.family,
+          genuses: {},
+          count: 0
+        }
+
+        genus = sci_name.split(" ").first
+        family_hash[:count] += 1 unless family_hash[:genuses][genus].present?
+        genus_hash = family_hash[:genuses][genus] ||= {
           species: {},
           count: 0
         }
-        taxonomy_data[:families][family][:count] += 1
 
-        taxonomy_data[:families][family][:species][sci_name] = {
+        genus_hash[:count] += 1
+        genus_hash[:species][sci_name] = {
           scientific_name: sci_name,
           common_name: species_tax.commonname
         }
 
-        taxonomy_data[:count] += 1
+        taxonomy_data[:total_species_count] += 1
       end
 
       Datasets::JsonWriter.write(

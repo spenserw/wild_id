@@ -2,7 +2,7 @@ require "test_helper"
 
 # == Schema Information
 #
-# Table name: families
+# Table name: taxonomic_classes
 # Database name: primary
 #
 #  id              :bigint           not null, primary key
@@ -10,18 +10,8 @@ require "test_helper"
 #  scientific_name :text
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  external_id     :text
-#  order_id        :bigint
 #
-# Indexes
-#
-#  index_families_on_order_id  (order_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (order_id => orders.id)
-#
-class FamilyTest < ActiveSupport::TestCase
+class TaxonomicClassTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
