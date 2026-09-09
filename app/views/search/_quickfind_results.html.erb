@@ -1,0 +1,18 @@
+<%= turbo_frame_tag "quickfind_results" do %>
+  <div class="results">
+    <% results&.each do |result| %>
+      <div class="item">
+        <span class="scientific_name"><i><%= result[:scientific_name] %></i></span>
+        <span class="taxa-info">
+          <span class="type"><%= result[:type] %></span>
+          &bull;
+          <span class="class"><%= result[:class] %></span>
+        </span>
+        <br />
+        <% if result[:common_names].length > 0 %>
+          <span class="common_name">&rdsh; <%= result[:common_names].first %></span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

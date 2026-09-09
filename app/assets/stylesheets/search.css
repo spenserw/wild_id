@@ -1,0 +1,104 @@
+.searchbar {
+  height: 2.75rem;
+  width: 18rem;
+  background-color: oklch(from var(--secondary-color) calc(l - 0.05) c h);
+
+  .input-section {
+    > .icon {
+      padding: 3px 0px 2px 6px;
+      margin-right: 6px;
+      border-right: 2px solid rgb(from var(--accent-color) r g b / 0.85);
+
+      > .search-icon {
+        position: relative;
+        top: 7px;
+
+        padding: 0px 2px;
+        height: 65%;
+        width: 1.25rem;
+        opacity: 0.85;
+        fill: var(--accent-color);
+        stroke: var(--accent-color);
+      }
+    }
+
+    > .input-shell {
+      position: relative;
+      display: inline-block;
+      width: 82%;
+      height: 90%;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background-color: var(--accent-color);
+        transform: scaleX(0.66);
+        opacity: 0;
+        transition: transform 0.25s ease-out;
+      }
+
+      &:focus-within::after {
+        opacity: 1;
+        transform: scaleX(1);
+      }
+
+      > input {
+        width: 100%;
+        height: 100%;
+        padding: 4px 2px;
+
+        font-size: 16px;
+        color: inherit;
+        border: none;
+        background-color: inherit;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+  }
+}
+
+#quickfind_results {
+  position: relative;
+
+  .results {
+    display: flex;
+    flex-direction: column;
+
+    width: 24rem;
+    padding: 4px 8px;
+
+    background: var(--accent-color);
+
+    .item {
+      min-height: 40px;
+      padding: 2px 0px;
+
+      color: gray;
+      border-bottom: 1px solid gray;
+
+      > .scientific_name {
+        font-size: 16px;
+      }
+
+      > .taxa-info {
+        float: right;
+        font-size: 14px;
+      }
+
+      > .common_name {
+        font-size: 14px;
+      }
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+  }
+}

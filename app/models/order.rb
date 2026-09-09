@@ -6,6 +6,7 @@
 #  id                 :bigint           not null, primary key
 #  common_names       :text             default([]), is an Array
 #  scientific_name    :text
+#  type               :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  taxonomic_class_id :bigint           not null
@@ -20,4 +21,8 @@
 #
 class Order < ApplicationRecord
   belongs_to :taxonomic_class
+
+  def href
+    raise NotImplementedError
+  end
 end

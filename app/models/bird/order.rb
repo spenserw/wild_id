@@ -6,6 +6,7 @@
 #  id                 :bigint           not null, primary key
 #  common_names       :text             default([]), is an Array
 #  scientific_name    :text
+#  type               :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
 #  taxonomic_class_id :bigint           not null
@@ -20,5 +21,8 @@
 #
 module Bird
   class Order < ::Order
+    def href
+      "#{Bird::Constants::BIRDS_PATH}/#{::Constants::ORDER_PATH}"
+    end
   end
 end

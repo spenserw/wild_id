@@ -14,7 +14,11 @@
   position: absolute;
   top: 18%;
   left: 5%;
-  padding: 15px;
+  padding: 20px;
+
+  border: 1px solid rgb(from var(--secondary-color) r g b / 0.75);
+  border-radius: 15px;
+  background-color: rgb(from var(--secondary-color) r g b / 0.75);
   color: var(--accent-color);
 }
 

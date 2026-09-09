@@ -6,6 +6,7 @@
 #  id              :bigint           not null, primary key
 #  common_names    :text             default([]), is an Array
 #  scientific_name :text
+#  type            :string
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  external_id     :text
@@ -23,10 +24,14 @@ module Bird
   class Genus < ::Genus
     belongs_to :family,
       class_name: "Bird::Family",
-      inverse_of: :genuses
+      inverse_of: :genera
 
     has_many :species,
       class_name: "Bird::Species",
       inverse_of: :genus
+
+    def href
+      "#{Bird::Constants::BIRDS_PATH}/#{::Constants::GENUS_PATH}"
+    end
   end
 end

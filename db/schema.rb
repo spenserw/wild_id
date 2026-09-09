@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_07_140440) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
@@ -66,6 +66,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_140440) do
     t.text "external_id"
     t.bigint "order_id"
     t.text "scientific_name"
+    t.string "type"
     t.datetime "updated_at", null: false
     t.index ["order_id"], name: "index_families_on_order_id"
   end
@@ -76,6 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_140440) do
     t.text "external_id"
     t.bigint "family_id", null: false
     t.text "scientific_name"
+    t.string "type"
     t.datetime "updated_at", null: false
     t.index ["family_id"], name: "index_genera_on_family_id"
   end
@@ -85,6 +87,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_140440) do
     t.datetime "created_at", null: false
     t.text "scientific_name"
     t.bigint "taxonomic_class_id", null: false
+    t.string "type"
     t.datetime "updated_at", null: false
     t.index ["taxonomic_class_id"], name: "index_orders_on_taxonomic_class_id"
   end
@@ -95,6 +98,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_07_140440) do
     t.text "external_id"
     t.bigint "genus_id", null: false
     t.text "scientific_name"
+    t.string "type"
     t.datetime "updated_at", null: false
     t.index ["genus_id"], name: "index_species_on_genus_id"
   end

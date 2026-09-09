@@ -13,6 +13,8 @@ Rails.application.routes.draw do
 
   root "landing#index"
 
+  get "search/quickfind", to: "search#quickfind"
+
   resources :birds, only: %i[index] do
   end
 end
