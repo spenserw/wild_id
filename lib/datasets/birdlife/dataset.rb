@@ -11,7 +11,7 @@ module Datasets
         birdlife_data_dir.join("#{name}.json")
       end
 
-      def self.load_bird_orders(taxa_path)
+      def self.import_bird_orders(taxa_path)
         puts "Importing bird orders from #{taxa_path}..."
         taxa = load_taxa_dump(taxa_path)
 
@@ -27,7 +27,7 @@ module Datasets
         end
       end
 
-      def self.load_bird_families(taxa_path)
+      def self.import_bird_families(taxa_path)
         puts "Importing bird families from #{taxa_path}..."
         taxa = load_taxa_dump(taxa_path)
 
@@ -46,7 +46,7 @@ module Datasets
         end
       end
 
-      def self.load_bird_genuses(taxa_path)
+      def self.import_bird_genuses(taxa_path)
         puts "Importing bird genuses from #{taxa_path}..."
         taxa = load_taxa_dump(taxa_path)
 
@@ -66,7 +66,7 @@ module Datasets
         end
       end
 
-      def self.load_bird_species(taxa_path)
+      def self.import_bird_species(taxa_path)
         puts "Importing bird species from #{taxa_path}..."
         taxa = load_taxa_dump(taxa_path)
 

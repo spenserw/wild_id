@@ -1,34 +1,35 @@
 namespace :birdlife do
   desc "Destroy all Bird::Species and Bird::Family records"
   task cleanup: :environment do
+    # TODO: cleanup other ranks
     Bird::Species.destroy_all
     Bird::Family.destroy_all
   end
 
   desc "Import US bird orders from the us_taxa artifact"
-  task load_us_bird_orders: :environment do
-    Datasets::BirdLife::Dataset.load_bird_orders(
+  task import_us_bird_orders: :environment do
+    Datasets::BirdLife::Dataset.import_bird_orders(
       Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
     )
   end
 
   desc "Import US bird families from the us_taxa artifact"
-  task load_us_bird_families: :environment do
-    Datasets::BirdLife::Dataset.load_bird_families(
+  task import_us_bird_families: :environment do
+    Datasets::BirdLife::Dataset.import_bird_families(
       Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
     )
   end
 
   desc "Import US bird genuses from the us_taxa artifact"
-  task load_us_bird_genuses: :environment do
-    Datasets::BirdLife::Dataset.load_bird_genuses(
+  task import_us_bird_genuses: :environment do
+    Datasets::BirdLife::Dataset.import_bird_genuses(
       Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
     )
   end
 
   desc "Import US bird species from the us_taxa artifact"
-  task load_us_bird_species: :environment do
-    Datasets::BirdLife::Dataset.load_bird_species(
+  task import_us_bird_species: :environment do
+    Datasets::BirdLife::Dataset.import_bird_species(
       Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
     )
   end
@@ -38,10 +39,10 @@ namespace :birdlife do
     :cleanup,
     "artifacts:extract",
     "artifacts:us_taxa",
-    :load_us_bird_orders,
-    :load_us_bird_families,
-    :load_us_bird_genuses,
-    :load_us_bird_species
+    :import_us_bird_orders,
+    :import_us_bird_families,
+    :import_us_bird_genuses,
+    :import_us_bird_species
   ]
 
   namespace :artifacts do
@@ -112,7 +113,7 @@ namespace :birdlife do
         }
 
         order_hash[:count] += 1 unless order_hash[:families][family].present?
-        family_hash = taxonomy_data[:orders][order][:families][family] ||= {
+        family_hash = order_hash[:families][family] ||= {
           common_name: species_tax.family,
           genuses: {},
           count: 0
