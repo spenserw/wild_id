@@ -21,7 +21,48 @@ module Datasets
           scientific_name.match(/<i>([^<]+)/)[1]
         end
 
-        def build_species_taxon(plants_profile, taxa_data)
+        def walk_ranks_to_taxon(taxa_data, profile)
+          ranks = [
+            ::Order,
+            ::Family,
+            ::Genus,
+            ::Species
+          ]
+
+          target_rank = profile[:Rank]&.downcase&.to_sym
+          return if target_rank.nil? # TODO: why are there bad items? possible bad scrape? e.g. COLUM3
+
+          current_rank_hash = taxa_data[ranks.first.to_s.pluralize.downcase.to_sym] # TODO: extract to_sym to TaxonomicRank baseclass
+          ranks.each_with_index do |rank, index|
+            taxon = {}
+            next_rank = ranks[index + 1]
+            next_rank_sym = next_rank.to_s.pluralize.downcase.to_sym # TODO: genus isn't pluralizing right
+            taxon[next_rank_sym] = {} unless next_rank.nil?
+
+            if target_rank == rank.to_s.downcase.to_sym
+              sci_name = parse_scientific_name(profile[:ScientificName])
+
+              current_rank_hash[sci_name] = taxon.merge(yield)
+            else
+              ancestor_summary = profile[:Ancestors].find { |ancestor| ancestor[:Rank] == rank.to_s }
+              return unless ancestor_summary.present?
+
+              ancestor_sci_name = parse_scientific_name(ancestor_summary[:ScientificName])
+              current_rank_hash[ancestor_sci_name] ||= stub_ancestor(ancestor_summary).merge(taxon)
+
+              current_rank_hash = current_rank_hash[ancestor_sci_name][next_rank_sym]
+            end
+          end
+        end
+
+        def stub_ancestor(summary)
+          sci_name = parse_scientific_name(summary[:ScientificName])
+
+          {
+            scientific_name: sci_name,
+            symbol: summary[:Symbol],
+            common_names: [ summary[:CommonName] || "" ]
+          }
         end
 
         def import_plant_orders(taxa_path)
@@ -71,7 +112,7 @@ module Datasets
                   puts "Importing genus [#{genus_scientific_name}]..."
                   Plant::Genus.find_or_create_by!(scientific_name: genus_scientific_name) do |g|
                     g.type = Plant::Genus
-                    # s.external_id = external_taxon.sisrecid # TODO: symbol
+                    s.external_id = genus_hash[:symbol]
                     g.family = family
                   end
                 end

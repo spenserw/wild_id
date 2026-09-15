@@ -46,47 +46,15 @@ namespace :plants do
         profile_path = "#{raw_data_dir}/#{entry_name}/#{Datasets::Plants::Dataset::PROFILE_PATH}"
         profile = JSON.parse(File.read(profile_path)).with_indifferent_access
 
-        next unless profile[:Rank] == "Species"
+        puts "Building: #{entry_name}..."
 
-        sci_name = Datasets::Plants::Dataset.parse_scientific_name(profile[:ScientificName])
-
-        ancestors = profile[:Ancestors]
-        order = ancestors.find { |ancestor| ancestor[:Rank] == "Order" }
-        next unless order.present? # TODO: some are missing order, e.g. THPE7
-
-        order_name = Datasets::Plants::Dataset.parse_scientific_name(order[:ScientificName])
-
-        family = ancestors.find { |ancestor| ancestor[:Rank] == "Family" }
-        family_name = Datasets::Plants::Dataset.parse_scientific_name(family[:ScientificName])
-        genus = ancestors.find { |ancestor| ancestor[:Rank] == "Genus" }
-        genus_name = Datasets::Plants::Dataset.parse_scientific_name(genus[:ScientificName])
-
-        taxonomy_data[:count] += 1 unless taxonomy_data[:orders][order_name].present?
-        order_hash = taxonomy_data[:orders][order_name] ||= {
-          families: {},
-          count: 0
-        }
-
-        order_hash[:count] += 1 unless order_hash[:families][family_name].present?
-        family_hash = order_hash[:families][family_name] ||= {
-          genuses: {},
-          count: 0
-        }
-
-        genus = sci_name.split(" ").first
-        family_hash[:count] += 1 unless family_hash[:genuses][genus_name].present?
-        genus_hash = family_hash[:genuses][genus_name] ||= {
-          species: {},
-          count: 0
-        }
-
-        genus_hash[:count] += 1
-        genus_hash[:species][sci_name] = {
-          scientific_name: sci_name,
-          common_name: profile[:CommonName]
-        }
-
-        taxonomy_data[:total_species_count] += 1
+        Datasets::Plants::Dataset.walk_ranks_to_taxon(taxonomy_data, profile) do
+          {
+            scientific_name: Datasets::Plants::Dataset.parse_scientific_name(profile[:ScientificName]),
+            symbol: profile[:Symbol],
+            common_names: [ profile[:CommonName] || "" ]
+          }
+        end
       end
 
       Datasets::JsonWriter.write(
