@@ -33,29 +33,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
     t.index ["bird_family_id"], name: "index_bird_species_on_bird_family_id"
   end
 
-# Could not dump table "birdlife_distributions" because of following StandardError
-#   Unknown type 'geometry(MultiPolygon,4326)' for column 'shape'
-
-
-  create_table "birdlife_taxonomy", primary_key: "objectid", id: :serial, force: :cascade do |t|
-    t.string "alternativecommonnames", limit: 255
-    t.string "authority", limit: 255
-    t.string "birdlifetaxonomy", limit: 255
-    t.string "commonname", limit: 255
-    t.string "family", limit: 255
-    t.string "familyname", limit: 255
-    t.string "order_", limit: 255
-    t.string "redlistcategory_2020", limit: 255
-    t.string "scientificname", limit: 255
-    t.float "sequence"
-    t.float "sisrecid"
-    t.string "subfamily", limit: 255
-    t.string "synonyms", limit: 255
-    t.string "taxonomicnotes", limit: 255
-    t.binary "taxonomicsource"
-    t.string "tribe", limit: 255
-  end
-
 # Could not dump table "counties" because of following StandardError
 #   Unknown type 'geometry(MultiPolygon,4326)' for column 'wkb_geometry'
 
@@ -109,10 +86,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
     t.text "scientific_name"
     t.datetime "updated_at", null: false
   end
-
-# Could not dump table "us_boundary" because of following StandardError
-#   Unknown type 'geometry' for column 'geometry'
-
 
   add_foreign_key "bird_species", "bird_families"
   add_foreign_key "families", "orders"
