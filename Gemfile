@@ -67,6 +67,10 @@ group :development do
   # Scraping
   gem "ferrum"
   gem "vessel"
+
+  # Debugging
+  gem "pry", "~> 0.16.0"
+  gem "pry-byebug", "~> 3.12"
 end
 
 group :test do
