@@ -15,6 +15,6 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.acronym "BirdLife"
   inflect.acronym "OGR"
 
-  inflect.plural "genus", "genera"
-  inflect.singular "genera", "genus"
+  inflect.plural (/^(g)enus$/i), '\1enera'
+  inflect.singular (/^(g)enera$/i), '\1enus'
 end
