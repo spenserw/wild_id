@@ -10,4 +10,9 @@
 #  updated_at      :datetime         not null
 #
 class TaxonomicClass < ApplicationRecord
+  include TaxonomicRank
+
+  def self.to_plural_sym
+    :classes
+  end
 end

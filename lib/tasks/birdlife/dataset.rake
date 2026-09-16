@@ -1,9 +1,10 @@
 namespace :birdlife do
   desc "Destroy all Bird::Species and Bird::Family records"
   task cleanup: :environment do
-    # TODO: cleanup other ranks
-    Bird::Species.destroy_all
-    Bird::Family.destroy_all
+    Bird::Order.delete_all
+    Bird::Family.delete_all
+    Bird::Genus.delete_all
+    Bird::Species.delete_all
   end
 
   desc "Import US bird orders from the us_taxa artifact"
@@ -20,9 +21,9 @@ namespace :birdlife do
     )
   end
 
-  desc "Import US bird genuses from the us_taxa artifact"
-  task import_us_bird_genuses: :environment do
-    Datasets::BirdLife::Dataset.import_bird_genuses(
+  desc "Import US bird genera from the us_taxa artifact"
+  task import_us_bird_genera: :environment do
+    Datasets::BirdLife::Dataset.import_bird_genera(
       Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
     )
   end
@@ -41,7 +42,7 @@ namespace :birdlife do
     "artifacts:us_taxa",
     :import_us_bird_orders,
     :import_us_bird_families,
-    :import_us_bird_genuses,
+    :import_us_bird_genera,
     :import_us_bird_species
   ]
 
@@ -115,13 +116,13 @@ namespace :birdlife do
         order_hash[:count] += 1 unless order_hash[:families][family].present?
         family_hash = order_hash[:families][family] ||= {
           common_name: species_tax.family,
-          genuses: {},
+          genera: {},
           count: 0
         }
 
         genus = sci_name.split(" ").first
-        family_hash[:count] += 1 unless family_hash[:genuses][genus].present?
-        genus_hash = family_hash[:genuses][genus] ||= {
+        family_hash[:count] += 1 unless family_hash[:genera][genus].present?
+        genus_hash = family_hash[:genera][genus] ||= {
           species: {},
           count: 0
         }

@@ -20,6 +20,8 @@
 #  fk_rails_...  (taxonomic_class_id => taxonomic_classes.id)
 #
 class Order < ApplicationRecord
+  include TaxonomicRank
+
   belongs_to :taxonomic_class
 
   def href

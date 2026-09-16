@@ -21,6 +21,8 @@
 #  fk_rails_...  (order_id => orders.id)
 #
 class Family < ApplicationRecord
+  include TaxonomicRank
+
   def href
     raise NotImplementedError
   end

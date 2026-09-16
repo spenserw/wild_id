@@ -23,6 +23,8 @@
 class Genus < ApplicationRecord
   self.table_name = "genera"
 
+  include TaxonomicRank
+
   def href
     raise NotImplementedError
   end

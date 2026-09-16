@@ -21,6 +21,8 @@
 #  fk_rails_...  (genus_id => genera.id)
 #
 class Species < ApplicationRecord
+  include TaxonomicRank
+
   def href
     raise NotImplementedError
   end

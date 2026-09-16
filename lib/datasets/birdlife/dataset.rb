@@ -46,15 +46,15 @@ module Datasets
         end
       end
 
-      def self.import_bird_genuses(taxa_path)
-        puts "Importing bird genuses from #{taxa_path}..."
+      def self.import_bird_genera(taxa_path)
+        puts "Importing bird genera from #{taxa_path}..."
         taxa = load_taxa_dump(taxa_path)
 
         Bird::Genus.transaction do
           taxa[:orders].each do |_, order_hash|
             order_hash[:families].each do |family_scientific_name, family_hash|
               family = Bird::Family.find_by(scientific_name: family_scientific_name)
-              family_hash[:genuses].each do |genus_scientific_name, genus_hash|
+              family_hash[:genera].each do |genus_scientific_name, genus_hash|
                 puts "Importing genus [#{genus_scientific_name}]..."
                 Bird::Genus.find_or_create_by!(scientific_name: genus_scientific_name) do |g|
                   g.type = Bird::Genus
@@ -73,7 +73,7 @@ module Datasets
         Bird::Species.transaction do
           taxa[:orders].each do |_, order_hash|
             order_hash[:families].each do |family_scientific_name, family_hash|
-              family_hash[:genuses].each do |genus_scientific_name, genus_hash|
+              family_hash[:genera].each do |genus_scientific_name, genus_hash|
                 genus = Bird::Genus.find_by(scientific_name: genus_scientific_name)
 
                 genus_hash[:species].each do |species_scientific_name, species_hash|
