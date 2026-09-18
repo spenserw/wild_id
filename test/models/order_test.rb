@@ -8,6 +8,7 @@ require "test_helper"
 #  id                 :bigint           not null, primary key
 #  common_names       :text             default([]), is an Array
 #  scientific_name    :text
+#  search_vector      :tsvector
 #  type               :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
@@ -15,6 +16,7 @@ require "test_helper"
 #
 # Indexes
 #
+#  index_orders_on_search_vector       (search_vector) USING gin
 #  index_orders_on_taxonomic_class_id  (taxonomic_class_id)
 #
 # Foreign Keys

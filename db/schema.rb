@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_17_222803) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "postgis"
@@ -43,9 +43,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
     t.text "external_id"
     t.bigint "order_id"
     t.text "scientific_name"
+    t.tsvector "search_vector"
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["order_id"], name: "index_families_on_order_id"
+    t.index ["search_vector"], name: "index_families_on_search_vector", using: :gin
   end
 
   create_table "genera", force: :cascade do |t|
@@ -54,18 +56,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
     t.text "external_id"
     t.bigint "family_id", null: false
     t.text "scientific_name"
+    t.tsvector "search_vector"
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["family_id"], name: "index_genera_on_family_id"
+    t.index ["search_vector"], name: "index_genera_on_search_vector", using: :gin
   end
 
   create_table "orders", force: :cascade do |t|
     t.text "common_names", default: [], array: true
     t.datetime "created_at", null: false
     t.text "scientific_name"
+    t.tsvector "search_vector"
     t.bigint "taxonomic_class_id", null: false
     t.string "type"
     t.datetime "updated_at", null: false
+    t.index ["search_vector"], name: "index_orders_on_search_vector", using: :gin
     t.index ["taxonomic_class_id"], name: "index_orders_on_taxonomic_class_id"
   end
 
@@ -75,9 +81,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_08_024735) do
     t.text "external_id"
     t.bigint "genus_id", null: false
     t.text "scientific_name"
+    t.tsvector "search_vector"
     t.string "type"
     t.datetime "updated_at", null: false
     t.index ["genus_id"], name: "index_species_on_genus_id"
+    t.index ["search_vector"], name: "index_species_on_search_vector", using: :gin
   end
 
   create_table "taxonomic_classes", force: :cascade do |t|

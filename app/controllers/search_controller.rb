@@ -1,13 +1,9 @@
 class SearchController < ApplicationController
   def quickfind
     search_term = params[:query]
-    return head :ok if search_term.nil? || search_term.empty?
 
-    # TODO: Replace this with ts_ search
-    search_results = Species.where("scientific_name LIKE ?", search_term + "%") +
-      Genus.where("scientific_name LIKE ?", search_term + "%") +
-      Family.where("scientific_name LIKE ?", search_term + "%") +
-      Order.where("scientific_name LIKE ?", search_term + "%")
+    search_models = [ ::Species, ::Genus, ::Family, ::Order ]
+    search_results = search_models.map { |model| model.search(search_term) }.flatten
 
     @results = search_results.map do |item|
       {

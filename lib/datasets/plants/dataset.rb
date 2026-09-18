@@ -29,11 +29,21 @@ module Datasets
           scientific_name.match(/<i>([^<]+)/)[1]
         end
 
+        def plant?(profile)
+          ancestors = profile[:Ancestors]
+          ancestors.first[:Symbol] == "Plantae"
+        end
+
+        def fungi?(profile)
+          ancestors = profile[:Ancestors]
+          ancestors.first[:Symbol] == "Fungi"
+        end
+
         def walk_ranks_to_taxon(taxa, profile)
           target_rank = profile[:Rank]&.downcase&.to_sym
           return if target_rank.nil? # TODO: why are there bad items? possible bad scrape? e.g. COLUM3
 
-          current_rank_hash = taxa[RANKS.first.to_plural_sym] # TODO: extract to_sym to TaxonomicRank baseclass
+          current_rank_hash = taxa[RANKS.first.to_plural_sym]
           RANKS.each_with_index do |rank, index|
             taxon = {}
             next_rank = RANKS[index + 1]

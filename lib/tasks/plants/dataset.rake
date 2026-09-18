@@ -1,10 +1,10 @@
 namespace :plants do
   desc "Destroy all Plant::Species and Plant::Family records"
   task cleanup: :environment do
-    Plant::Order.delete_all
-    Plant::Family.delete_all
-    Plant::Genus.delete_all
     Plant::Species.delete_all
+    Plant::Genus.delete_all
+    Plant::Family.delete_all
+    Plant::Order.delete_all
   end
 
   desc "Import US plant classes from the us_taxa artifact"
@@ -42,6 +42,8 @@ namespace :plants do
     )
   end
 
+  # TODO: Fungi
+
   namespace :artifacts do
     task us_taxa: :environment do
       raw_data_dir = Datasets::Plants::Dataset.scrape_data_dir
@@ -55,7 +57,7 @@ namespace :plants do
         profile_path = "#{raw_data_dir}/#{entry_name}/#{Datasets::Plants::Dataset::PROFILE_PATH}"
         profile = JSON.parse(File.read(profile_path)).with_indifferent_access
 
-        # TODO: Ensure plantae is root ancestor? no fungi
+        next unless Datasets::Plants::Dataset.plantae_child?(profile)
 
         puts "Building: #{entry_name}..."
 

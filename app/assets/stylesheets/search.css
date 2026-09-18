@@ -65,14 +65,19 @@
 }
 
 #quickfind_results {
-  position: relative;
+  display: block;
+  max-height: 368px;
+  max-width: 400px;
+  overflow-x: hidden;
+  overflow-y: scroll;
 
   .results {
     display: flex;
     flex-direction: column;
 
-    width: 24rem;
-    padding: 4px 8px;
+    &:not(:empty) {
+      padding: 4px 8px;
+    }
 
     background: var(--accent-color);
 
