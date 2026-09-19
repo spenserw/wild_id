@@ -9,70 +9,136 @@ namespace :plants do
 
   desc "Import US plant classes from the us_taxa artifact"
   task import_us_plant_classes: :environment do
-    Datasets::Plants::Dataset.import_plant_classes(
-      Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants::Dataset.import_taxa(taxa_path, ::TaxonomicClass) do |record|
+      record.common_names = data[:common_names]
+    end
   end
 
   desc "Import US plant orders from the us_taxa artifact"
   task import_us_plant_orders: :environment do
-    Datasets::Plants::Dataset.import_plant_orders(
-      Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Order) do |record, data, parent|
+      record.type = Plant::Order
+      record.common_names = data[:common_names]
+      record.taxonomic_class = ::TaxonomicClass.find_by(scientific_name: parent[:scientific_name])
+    end
   end
 
   desc "Import US plant families from the us_taxa artifact"
   task import_us_plant_families: :environment do
-    Datasets::Plants::Dataset.import_plant_families(
-      Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Family) do |record, data, parent|
+      record.type = Plant::Family
+      record.external_id = data[:symbol]
+      record.common_names = data[:common_names]
+      record.order = Plant::Order.find_by(scientific_name: parent[:scientific_name])
+    end
   end
 
   desc "Import US plant genuses from the us_taxa artifact"
   task import_us_plant_genera: :environment do
-    Datasets::Plants::Dataset.import_plant_genera(
-      Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Genus) do |record, data, parent|
+      record.type = Plant::Genus
+      record.external_id = data[:symbol]
+      record.common_names = data[:common_names]
+      record.family = Plant::Family.find_by(scientific_name: parent[:scientific_name])
+    end
   end
 
   desc "Import US plant species from the us_taxa artifact"
   task import_us_plant_species: :environment do
-    Datasets::Plants::Dataset.import_plant_species(
-      Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Species) do |record, data, parent|
+      record.type = Plant::Species
+      record.external_id = data[:symbol]
+      record.common_names = data[:common_names]
+      record.genus = Plant::Genus.find_by(scientific_name: parent[:scientific_name])
+    end
   end
 
-  # TODO: Fungi
+  desc "Cleanup, extract BirdLife data, build us_taxa, and load families/species"
+  task import: [
+    :cleanup,
+    "artifacts:us_taxa",
+    :import_us_plant_classes,
+    :import_us_plant_orders,
+    :import_us_plant_families,
+    :import_us_plant_genera,
+    :import_us_plant_species
+  ]
+
+  # TODO: Import lichens
+  #
+  # desc "Import US fungi classes"
+  # task import_us_fungi_classes: :environment do
+  # end
+  #
+  # desc "Import US fungi orders"
+  # task import_us_plant_orders: :environment do
+  # end
+  #
+  # desc "Import US fungi families"
+  # task import_us_plant_families: :environment do
+  # end
+  #
+  # desc "Import US fungi genuses"
+  # task import_us_plant_genera: :environment do
+  # end
+  #
+  # desc "Import US fungi species"
+  # task import_us_plant_species: :environment do
+  # end
 
   namespace :artifacts do
     task us_taxa: :environment do
       raw_data_dir = Datasets::Plants::Dataset.scrape_data_dir
 
-      taxonomy_data = {
-        classes: {},
-        count: 0
+      plants_taxonomy_data = {
+        classes: {}
+      }
+
+      fungi_taxonomy_data = {
+        classes: {}
       }
 
       Dir.each_child(raw_data_dir) do |entry_name|
         profile_path = "#{raw_data_dir}/#{entry_name}/#{Datasets::Plants::Dataset::PROFILE_PATH}"
         profile = JSON.parse(File.read(profile_path)).with_indifferent_access
 
-        next unless Datasets::Plants::Dataset.plantae_child?(profile)
+        taxonomy_data = nil
+        taxonomy_type = nil
+        if Datasets::Plants::Dataset.plant?(profile)
+          taxonomy_data = plants_taxonomy_data
+          taxonomy_type = "plant"
+        elsif Datasets::Plants::Dataset.fungi?(profile)
+          taxonomy_data = fungi_taxonomy_data
+          taxonomy_type = "fungi"
+        end
 
-        puts "Building: #{entry_name}..."
+        next if taxonomy_data.nil?
+
+        puts "Building #{taxonomy_type} #{entry_name}..."
 
         Datasets::Plants::Dataset.walk_ranks_to_taxon(taxonomy_data, profile) do
           {
             scientific_name: Datasets::Plants::Dataset.parse_scientific_name(profile[:ScientificName]),
             symbol: profile[:Symbol],
-            common_names: [ profile[:CommonName] || "" ]
+            common_names: [ profile[:CommonName] || "" ].concat(profile[:OtherCommonNames])
           }
         end
       end
 
       Datasets::JsonWriter.write(
-        "us_taxa",
-        taxonomy_data,
+        Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT,
+        plants_taxonomy_data,
+        dest_dir: Datasets::Plants::Dataset.plants_data_dir
+      )
+
+      Datasets::JsonWriter.write(
+        Datasets::Plants::Dataset::US_FUNGI_TAXA_ARTIFACT,
+        fungi_taxonomy_data,
         dest_dir: Datasets::Plants::Dataset.plants_data_dir
       )
     end

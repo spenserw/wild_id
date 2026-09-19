@@ -2,7 +2,8 @@ module Datasets
   module Plants
     class Dataset
       PROFILE_PATH = "profile.json".freeze
-      US_TAXA_ARTIFACT = "us_taxa".freeze
+      US_PLANTS_TAXA_ARTIFACT = "us_plants_taxa".freeze
+      US_FUNGI_TAXA_ARTIFACT = "us_fungi_taxa".freeze
 
       RANKS = [
         ::TaxonomicClass,
@@ -30,13 +31,17 @@ module Datasets
         end
 
         def plant?(profile)
-          ancestors = profile[:Ancestors]
-          ancestors.first[:Symbol] == "Plantae"
+          root_ancestor = profile[:Ancestors]&.first
+          return false if root_ancestor.nil?
+
+          root_ancestor[:Symbol] == "Plantae"
         end
 
         def fungi?(profile)
-          ancestors = profile[:Ancestors]
-          ancestors.first[:Symbol] == "Fungi"
+          root_ancestor = profile[:Ancestors]&.first
+          return false if root_ancestor.nil?
+
+          root_ancestor[:Symbol] == "Fungi"
         end
 
         def walk_ranks_to_taxon(taxa, profile)
@@ -47,7 +52,7 @@ module Datasets
           RANKS.each_with_index do |rank, index|
             taxon = {}
             next_rank = RANKS[index + 1]
-            next_rank_sym = next_rank.to_plural_sym
+            next_rank_sym = next_rank&.to_plural_sym
             taxon[next_rank_sym] = {} unless next_rank.nil?
 
             if target_rank == rank.to_plural_sym
@@ -55,7 +60,7 @@ module Datasets
 
               current_rank_hash[sci_name] = taxon.merge(yield)
             else
-              ancestor_summary = profile[:Ancestors].find { |ancestor| ancestor[:Rank] == rank.to_s }
+              ancestor_summary = profile[:Ancestors].find { |ancestor| ancestor[:Rank] == rank.rank_name }
               return unless ancestor_summary.present?
 
               ancestor_sci_name = parse_scientific_name(ancestor_summary[:ScientificName])
@@ -96,87 +101,18 @@ module Datasets
           end
         end
 
-        def import_plant_classes(taxa_path)
-          puts "Importing plant classes from #{taxa_path}..."
+        def import_taxa(taxa_path, rank, &block)
+          base_class = rank.base_class
+          base_class_sym = base_class.to_plural_sym
+          puts "Importing plant #{base_class_sym} from #{taxa_path}..."
           taxa = load_taxa_dump(taxa_path)
 
-          ::TaxonomicClass.transaction do
-            each_of_rank(taxa, ::TaxonomicClass) do |scientific_name, data, parent|
-              puts "Importing class [#{scientific_name}]..."
+          rank.transaction do
+            each_of_rank(taxa, base_class) do |scientific_name, data, parent|
+              puts "Importing #{base_class.to_sym} [#{scientific_name}]..."
 
-              ::TaxonomicClass.find_or_create_by!(scientific_name: scientific_name) do |c|
-                c.common_names = data[:common_names]
-              end
-            end
-          end
-        end
-
-        def import_plant_orders(taxa_path)
-          puts "Importing plant orders from #{taxa_path}..."
-          taxa = load_taxa_dump(taxa_path)
-
-          Plant::Order.transaction do
-            each_of_rank(taxa, ::Order) do |scientific_name, data, parent|
-              puts "Importing order [#{scientific_name}]..."
-
-              Plant::Order.find_or_create_by!(scientific_name: scientific_name) do |o|
-                o.type = Plant::Order
-                o.common_names = data[:common_names]
-                o.taxonomic_class = ::TaxonomicClass.find_by(scientific_name: parent[:scientific_name])
-              end
-            end
-          end
-        end
-
-        def import_plant_families(taxa_path)
-          puts "Importing plant famlilies from #{taxa_path}..."
-          taxa = load_taxa_dump(taxa_path)
-
-          Plant::Family.transaction do
-            each_of_rank(taxa, ::Family) do |scientific_name, data, parent|
-              puts "Importing family [#{scientific_name}]..."
-
-              Plant::Family.find_or_create_by!(scientific_name: scientific_name) do |f|
-                f.type = Plant::Family
-                f.order = Plant::Order.find_by(scientific_name: parent[:scientific_name])
-                f.external_id = data[:symbol]
-                f.common_names = data[:common_names]
-              end
-            end
-          end
-        end
-
-        def import_plant_genera(taxa_path)
-          puts "Importing plant genera from #{taxa_path}..."
-          taxa = load_taxa_dump(taxa_path)
-
-          Plant::Genus.transaction do
-            each_of_rank(taxa, ::Genus) do |scientific_name, data, parent|
-              puts "Importing genus [#{scientific_name}]..."
-
-              Plant::Genus.find_or_create_by!(scientific_name: scientific_name) do |g|
-                g.type = Plant::Genus
-                g.family = Plant::Family.find_by(scientific_name: parent[:scientific_name])
-                g.common_names = data[:common_names]
-                g.external_id = data[:symbol]
-              end
-            end
-          end
-        end
-
-        def import_plant_species(taxa_path)
-          puts "Importing plant species from #{taxa_path}..."
-          taxa = load_taxa_dump(taxa_path)
-
-          Plant::Species.transaction do
-            each_of_rank(taxa, ::Species) do |scientific_name, data, parent|
-              puts "Importing species [#{scientific_name}]..."
-
-              Plant::Species.find_or_create_by!(scientific_name: scientific_name) do |s|
-                s.type = Plant::Species
-                s.external_id = data[:symbol]
-                s.common_names = data[:common_names]
-                s.genus = Plant::Genus.find_by(scientific_name: parent[:scientific_name])
+              rank.find_or_create_by!(scientific_name: scientific_name) do |record|
+                yield record, data, parent
               end
             end
           end

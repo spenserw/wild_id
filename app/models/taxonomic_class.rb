@@ -12,6 +12,10 @@
 class TaxonomicClass < ApplicationRecord
   include TaxonomicRank
 
+  def self.rank_name
+    "Class"
+  end
+
   def self.to_plural_sym
     :classes
   end
