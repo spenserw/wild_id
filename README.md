@@ -33,11 +33,17 @@ app/
 └── models/
     ├── taxonomic_class.rb       # Base class (e.g. Aves)
     ├── order.rb, family.rb, genus.rb, species.rb  # Base taxonomy
-    └── bird/
-        ├── order.rb, family.rb, genus.rb, species.rb  # Bird taxonomy (STI)
-        └── birdlife/
-            ├── taxon.rb         # BirdLife checklist data
-            └── distribution.rb  # Species range polygons
+    ├── concerns/
+    │   └── taxonomic_rank.rb    # Shared taxonomy behavior
+    ├── bird/
+    │   ├── order.rb, family.rb, genus.rb, species.rb  # Bird taxonomy (STI)
+    │   └── birdlife/
+    │       ├── taxon.rb         # BirdLife checklist data
+    │       └── distribution.rb  # Species range polygons
+    ├── plant/
+    │   └── order.rb, family.rb, genus.rb, species.rb  # Plant taxonomy (STI)
+    └── fungi/
+        └── order.rb, family.rb, genus.rb, species.rb  # Fungi taxonomy (STI)
 ```
 
 ## Datasets
