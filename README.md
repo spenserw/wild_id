@@ -49,9 +49,18 @@ app/
 | | `birdlife:cleanup` | Destroys all Bird::Species and Bird::Family records |
 | | `birdlife:artifacts:extract` | Extracts BOTW.7z, loads taxonomy/distributions into PostGIS |
 | | `birdlife:artifacts:us_taxa` | Builds `data/birdlife/us_taxa.json` from US distributions |
-| | `birdlife:load_us_bird_families` | Imports US bird families from us_taxa artifact |
-| | `birdlife:load_us_bird_species` | Imports US bird species from us_taxa artifact |
-| **Plants** | `plants:pull_complete_list` | Downloads full USDA plants list |
+| | `birdlife:import_us_bird_orders` | Imports US bird orders from us_taxa artifact |
+| | `birdlife:import_us_bird_families` | Imports US bird families from us_taxa artifact |
+| | `birdlife:import_us_bird_genera` | Imports US bird genera from us_taxa artifact |
+| | `birdlife:import_us_bird_species` | Imports US bird species from us_taxa artifact |
+| **Plants** | `plants:import` | Full pipeline: cleanup, and load classes/orders/families/genera/species |
+| | `plants:cleanup` | Destroys all Plant::Species and Plant::Family records |
+| | `plants:pull_complete_list` | Downloads full USDA plants list |
 | | `plants:pull_state_list[State]` | Downloads state-specific plants list |
 | | `plants:schedule_full_scrape` | Enqueues jobs to scrape all plants from USDA plants |
 | | `plants:schedule_state_scrape[State]` | Enqueues jobs to perform a state specific scrape |
+| | `plants:import_us_plant_classes` | Imports US plant classes from us_taxa artifact |
+| | `plants:import_us_plant_orders` | Imports US plant orders from us_taxa artifact |
+| | `plants:import_us_plant_families` | Imports US plant families from us_taxa artifact |
+| | `plants:import_us_plant_genera` | Imports US plant genera from us_taxa artifact |
+| | `plants:import_us_plant_species` | Imports US plant species from us_taxa artifact |
