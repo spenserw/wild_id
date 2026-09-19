@@ -55,7 +55,7 @@ app/
 | | `birdlife:import_us_bird_species` | Imports US bird species from us_taxa artifact |
 | **Plants** | `plants:import` | Full pipeline: cleanup, and load classes/orders/families/genera/species |
 | | `plants:cleanup` | Destroys all Plant::Species and Plant::Family records |
-| | `plants:artifacts:us_taxa` | Builds `data/plants/us_taxa.json` from scraped plant profiles |
+| | `plants:artifacts:us_taxa` | Builds `data/plants/us_plants_taxa.json` from scraped plant profiles |
 | | `plants:pull_complete_list` | Downloads full USDA plants list |
 | | `plants:pull_state_list[State]` | Downloads state-specific plants list |
 | | `plants:schedule_full_scrape` | Enqueues jobs to scrape all plants from USDA plants |
