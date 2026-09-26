@@ -117,21 +117,31 @@ namespace :birdlife do
 
       us_species.each do |s|
         species_tax = Bird::BirdLife::Taxon.find_by(sisrecid: s.sisid)
+        order = species_tax.order_
+        family = species_tax.familyname
         sci_name = species_tax.scientificname
 
-        lineage = [
-          { rank: ::Order, scientific_name: species_tax.order_ },
-          { rank: ::Family, scientific_name: species_tax.familyname, stub: { common_name: species_tax.family } },
-          { rank: ::Genus, scientific_name: sci_name.split(" ").first },
-          { rank: ::Species, scientific_name: sci_name, target: true }
-        ]
+        order_hash = taxonomy_data[:orders][order] ||= {
+          scientific_name: order,
+          families: {}
+        }
 
-        Datasets::BirdLife.walk_ranks_to_taxon(taxonomy_data, lineage) do
-          {
-            scientific_name: sci_name,
-            common_name: species_tax.commonname
-          }
-        end
+        family_hash = order_hash[:families][family] ||= {
+          scientific_name: family,
+          common_name: species_tax.family,
+          genera: {}
+        }
+
+        genus = sci_name.split(" ").first
+        genus_hash = family_hash[:genera][genus] ||= {
+          scientific_name: genus,
+          species: {}
+        }
+
+        genus_hash[:species][sci_name] = {
+          scientific_name: sci_name,
+          common_name: species_tax.commonname
+        }
       end
 
       Datasets::JsonWriter.write(

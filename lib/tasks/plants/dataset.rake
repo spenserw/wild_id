@@ -119,12 +119,9 @@ namespace :plants do
 
         next if taxonomy_data.nil?
 
-        lineage = Datasets::Plants.lineage_for(profile)
-        next if lineage.nil?
-
         puts "Building #{taxonomy_type} #{entry_name}..."
 
-        Datasets::Plants.walk_ranks_to_taxon(taxonomy_data, lineage) do
+        Datasets::Plants.walk_ranks_to_taxon(taxonomy_data, profile) do
           {
             scientific_name: Datasets::Plants.parse_scientific_name(profile[:ScientificName]),
             symbol: profile[:Symbol],

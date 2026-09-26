@@ -44,34 +44,6 @@ module Datasets
         end
       end
 
-      # Extends a nested taxonomy hash with a single lineage.
-      #
-      # +lineage+ is an ordered array of nodes from the root rank down to the
-      # deepest rank, each shaped like:
-      #
-      #   { rank: ::Family, scientific_name: "Rosaceae", stub: { ... } }
-      #
-      # Intermediate/non-target ranks are created as stubs, merging any +:stub+
-      # metadata the first time they are seen. The node flagged +:target+ has
-      # the block's return value merged onto it.
-      def walk_ranks_to_taxon(taxa, lineage)
-        current_rank_hash = taxa[lineage.first[:rank].to_plural_sym]
-
-        lineage.each do |node|
-          next_rank = RANKS[RANKS.index(node[:rank]) + 1]
-          taxon = {}
-          taxon[next_rank.to_plural_sym] = {} unless next_rank.nil?
-
-          if node[:target]
-            current_rank_hash[node[:scientific_name]] = taxon.merge(yield)
-          else
-            stub = (node[:stub] || {}).merge(scientific_name: node[:scientific_name])
-            current_rank_hash[node[:scientific_name]] ||= stub.merge(taxon)
-            current_rank_hash = current_rank_hash[node[:scientific_name]][next_rank.to_plural_sym] unless next_rank.nil?
-          end
-        end
-      end
-
       private
 
       def load_taxa_dump(path)

@@ -35,34 +35,32 @@ module Datasets
         root_ancestor[:Symbol] == "Fungi"
       end
 
-      # Builds the +lineage+ argument for Dataset.walk_ranks_to_taxon from a
-      # scraped USDA profile. Returns nil when the profile has no usable rank.
-      def lineage_for(profile)
-        raw_rank = profile[:Rank]&.downcase&.to_sym
-        return if raw_rank.nil? # TODO: why are there bad items? possible bad scrape? e.g. COLUM3
+      def walk_ranks_to_taxon(taxa, profile)
+        target_rank = profile[:Rank]&.downcase&.to_sym
+        return if target_rank.nil? # TODO: why are there bad items? possible bad scrape? e.g. COLUM3
 
         ranks = Datasets::Dataset::RANKS
-        lineage = ranks.each_with_object([]) do |rank, nodes|
-          if raw_rank == rank.to_plural_sym
-            nodes << {
-              rank: rank,
-              scientific_name: parse_scientific_name(profile[:ScientificName]),
-              target: true
-            }
-            break nodes
+        current_rank_hash = taxa[ranks.first.to_plural_sym]
+        ranks.each_with_index do |rank, index|
+          taxon = {}
+          next_rank = ranks[index + 1]
+          next_rank_sym = next_rank&.to_plural_sym
+          taxon[next_rank_sym] = {} unless next_rank.nil?
+
+          if target_rank == rank.to_plural_sym
+            sci_name = parse_scientific_name(profile[:ScientificName])
+
+            current_rank_hash[sci_name] = taxon.merge(yield)
+          else
+            ancestor_summary = profile[:Ancestors].find { |ancestor| ancestor[:Rank] == rank.rank_name }
+            return unless ancestor_summary.present?
+
+            ancestor_sci_name = parse_scientific_name(ancestor_summary[:ScientificName])
+            current_rank_hash[ancestor_sci_name] ||= stub_ancestor(ancestor_summary).merge(taxon)
+
+            current_rank_hash = current_rank_hash[ancestor_sci_name][next_rank_sym]
           end
-
-          ancestor = profile[:Ancestors].find { |summary| summary[:Rank] == rank.rank_name }
-          break nodes if ancestor.nil?
-
-          nodes << {
-            rank: rank,
-            scientific_name: parse_scientific_name(ancestor[:ScientificName]),
-            stub: stub_ancestor(ancestor)
-          }
         end
-
-        lineage.presence
       end
 
       def stub_ancestor(summary)
