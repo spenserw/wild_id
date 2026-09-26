@@ -9,16 +9,16 @@ namespace :plants do
 
   desc "Import US plant classes from the us_taxa artifact"
   task import_us_plant_classes: :environment do
-    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
-    Datasets::Plants::Dataset.import_taxa(taxa_path, ::TaxonomicClass) do |record|
+    taxa_path = Datasets::Plants.artifact_path(Datasets::Plants::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants.import_taxa(taxa_path, ::TaxonomicClass) do |record, data|
       record.common_names = data[:common_names]
     end
   end
 
   desc "Import US plant orders from the us_taxa artifact"
   task import_us_plant_orders: :environment do
-    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
-    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Order) do |record, data, parent|
+    taxa_path = Datasets::Plants.artifact_path(Datasets::Plants::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants.import_taxa(taxa_path, Plant::Order) do |record, data, parent|
       record.type = Plant::Order
       record.common_names = data[:common_names]
       record.taxonomic_class = ::TaxonomicClass.find_by(scientific_name: parent[:scientific_name])
@@ -27,8 +27,8 @@ namespace :plants do
 
   desc "Import US plant families from the us_taxa artifact"
   task import_us_plant_families: :environment do
-    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
-    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Family) do |record, data, parent|
+    taxa_path = Datasets::Plants.artifact_path(Datasets::Plants::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants.import_taxa(taxa_path, Plant::Family) do |record, data, parent|
       record.type = Plant::Family
       record.external_id = data[:symbol]
       record.common_names = data[:common_names]
@@ -38,8 +38,8 @@ namespace :plants do
 
   desc "Import US plant genuses from the us_taxa artifact"
   task import_us_plant_genera: :environment do
-    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
-    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Genus) do |record, data, parent|
+    taxa_path = Datasets::Plants.artifact_path(Datasets::Plants::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants.import_taxa(taxa_path, Plant::Genus) do |record, data, parent|
       record.type = Plant::Genus
       record.external_id = data[:symbol]
       record.common_names = data[:common_names]
@@ -49,8 +49,8 @@ namespace :plants do
 
   desc "Import US plant species from the us_taxa artifact"
   task import_us_plant_species: :environment do
-    taxa_path = Datasets::Plants::Dataset.artifact_path(Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT)
-    Datasets::Plants::Dataset.import_taxa(taxa_path, Plant::Species) do |record, data, parent|
+    taxa_path = Datasets::Plants.artifact_path(Datasets::Plants::US_PLANTS_TAXA_ARTIFACT)
+    Datasets::Plants.import_taxa(taxa_path, Plant::Species) do |record, data, parent|
       record.type = Plant::Species
       record.external_id = data[:symbol]
       record.common_names = data[:common_names]
@@ -93,7 +93,7 @@ namespace :plants do
 
   namespace :artifacts do
     task us_taxa: :environment do
-      raw_data_dir = Datasets::Plants::Dataset.scrape_data_dir
+      raw_data_dir = Datasets::Plants.scrape_data_dir
 
       plants_taxonomy_data = {
         classes: {}
@@ -104,26 +104,29 @@ namespace :plants do
       }
 
       Dir.each_child(raw_data_dir) do |entry_name|
-        profile_path = "#{raw_data_dir}/#{entry_name}/#{Datasets::Plants::Dataset::PROFILE_PATH}"
+        profile_path = "#{raw_data_dir}/#{entry_name}/#{Datasets::Plants::PROFILE_PATH}"
         profile = JSON.parse(File.read(profile_path)).with_indifferent_access
 
         taxonomy_data = nil
         taxonomy_type = nil
-        if Datasets::Plants::Dataset.plant?(profile)
+        if Datasets::Plants.plant?(profile)
           taxonomy_data = plants_taxonomy_data
           taxonomy_type = "plant"
-        elsif Datasets::Plants::Dataset.fungi?(profile)
+        elsif Datasets::Plants.fungi?(profile)
           taxonomy_data = fungi_taxonomy_data
           taxonomy_type = "fungi"
         end
 
         next if taxonomy_data.nil?
 
+        lineage = Datasets::Plants.lineage_for(profile)
+        next if lineage.nil?
+
         puts "Building #{taxonomy_type} #{entry_name}..."
 
-        Datasets::Plants::Dataset.walk_ranks_to_taxon(taxonomy_data, profile) do
+        Datasets::Plants.walk_ranks_to_taxon(taxonomy_data, lineage) do
           {
-            scientific_name: Datasets::Plants::Dataset.parse_scientific_name(profile[:ScientificName]),
+            scientific_name: Datasets::Plants.parse_scientific_name(profile[:ScientificName]),
             symbol: profile[:Symbol],
             common_names: [ profile[:CommonName] || "" ].concat(profile[:OtherCommonNames])
           }
@@ -131,15 +134,15 @@ namespace :plants do
       end
 
       Datasets::JsonWriter.write(
-        Datasets::Plants::Dataset::US_PLANTS_TAXA_ARTIFACT,
+        Datasets::Plants::US_PLANTS_TAXA_ARTIFACT,
         plants_taxonomy_data,
-        dest_dir: Datasets::Plants::Dataset.plants_data_dir
+        dest_dir: Datasets::Plants.plants_data_dir
       )
 
       Datasets::JsonWriter.write(
-        Datasets::Plants::Dataset::US_FUNGI_TAXA_ARTIFACT,
+        Datasets::Plants::US_FUNGI_TAXA_ARTIFACT,
         fungi_taxonomy_data,
-        dest_dir: Datasets::Plants::Dataset.plants_data_dir
+        dest_dir: Datasets::Plants.plants_data_dir
       )
     end
   end

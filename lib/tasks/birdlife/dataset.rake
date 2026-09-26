@@ -9,30 +9,48 @@ namespace :birdlife do
 
   desc "Import US bird orders from the us_taxa artifact"
   task import_us_bird_orders: :environment do
-    Datasets::BirdLife::Dataset.import_bird_orders(
-      Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::BirdLife.artifact_path(Datasets::BirdLife::US_TAXA_ARTIFACT)
+    aves = TaxonomicClass.find_by(scientific_name: "Aves")
+
+    Datasets::BirdLife.import_taxa(taxa_path, Bird::Order, start_rank: ::Order) do |record|
+      record.type = Bird::Order
+      record.taxonomic_class = aves
+    end
   end
 
   desc "Import US bird families from the us_taxa artifact"
   task import_us_bird_families: :environment do
-    Datasets::BirdLife::Dataset.import_bird_families(
-      Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::BirdLife.artifact_path(Datasets::BirdLife::US_TAXA_ARTIFACT)
+
+    Datasets::BirdLife.import_taxa(taxa_path, Bird::Family, start_rank: ::Order) do |record, data, parent|
+      record.type = Bird::Family
+      record.order = Bird::Order.find_by(scientific_name: parent[:scientific_name])
+      record.common_names = [ data[:common_name] ]
+    end
   end
 
   desc "Import US bird genera from the us_taxa artifact"
   task import_us_bird_genera: :environment do
-    Datasets::BirdLife::Dataset.import_bird_genera(
-      Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::BirdLife.artifact_path(Datasets::BirdLife::US_TAXA_ARTIFACT)
+
+    Datasets::BirdLife.import_taxa(taxa_path, Bird::Genus, start_rank: ::Order) do |record, _data, parent|
+      record.type = Bird::Genus
+      record.family = Bird::Family.find_by(scientific_name: parent[:scientific_name])
+    end
   end
 
   desc "Import US bird species from the us_taxa artifact"
   task import_us_bird_species: :environment do
-    Datasets::BirdLife::Dataset.import_bird_species(
-      Datasets::BirdLife::Dataset.artifact_path(Datasets::BirdLife::Dataset::US_TAXA_ARTIFACT)
-    )
+    taxa_path = Datasets::BirdLife.artifact_path(Datasets::BirdLife::US_TAXA_ARTIFACT)
+
+    Datasets::BirdLife.import_taxa(taxa_path, Bird::Species, start_rank: ::Order) do |record, data, parent|
+      external_taxon = Bird::BirdLife::Taxon.find_by(scientificname: record.scientific_name)
+
+      record.type = Bird::Species
+      record.external_id = external_taxon&.sisrecid
+      record.common_names = [ data[:common_name] ]
+      record.genus = Bird::Genus.find_by(scientific_name: parent[:scientific_name])
+    end
   end
 
   desc "Cleanup, extract BirdLife data, build us_taxa, and load families/species"
@@ -49,7 +67,7 @@ namespace :birdlife do
   namespace :artifacts do
     desc "Extract BOTW archive and load taxonomy/distribution into Postgres"
     task extract: :environment do
-      data_dir = Datasets::BirdLife::Dataset.birdlife_data_dir
+      data_dir = Datasets::BirdLife.birdlife_data_dir
       esri_archive = data_dir.join("BOTW.7z")
       esri_db_path = data_dir.join("BOTW.gdb")
 
@@ -95,51 +113,31 @@ namespace :birdlife do
     task us_taxa: :environment do
       us_species = Bird::BirdLife::Distribution.species_in_boundary("us50")
 
-      taxonomy_data = {
-        orders: {},
-        count: 0,
-        total_species_count: 0
-      }
+      taxonomy_data = { orders: {} }
 
       us_species.each do |s|
         species_tax = Bird::BirdLife::Taxon.find_by(sisrecid: s.sisid)
-        order = species_tax.order_
-        family = species_tax.familyname
         sci_name = species_tax.scientificname
 
-        taxonomy_data[:count] += 1 unless taxonomy_data[:orders][order].present?
-        order_hash = taxonomy_data[:orders][order] ||= {
-          families: {},
-          count: 0
-        }
+        lineage = [
+          { rank: ::Order, scientific_name: species_tax.order_ },
+          { rank: ::Family, scientific_name: species_tax.familyname, stub: { common_name: species_tax.family } },
+          { rank: ::Genus, scientific_name: sci_name.split(" ").first },
+          { rank: ::Species, scientific_name: sci_name, target: true }
+        ]
 
-        order_hash[:count] += 1 unless order_hash[:families][family].present?
-        family_hash = order_hash[:families][family] ||= {
-          common_name: species_tax.family,
-          genera: {},
-          count: 0
-        }
-
-        genus = sci_name.split(" ").first
-        family_hash[:count] += 1 unless family_hash[:genera][genus].present?
-        genus_hash = family_hash[:genera][genus] ||= {
-          species: {},
-          count: 0
-        }
-
-        genus_hash[:count] += 1
-        genus_hash[:species][sci_name] = {
-          scientific_name: sci_name,
-          common_name: species_tax.commonname
-        }
-
-        taxonomy_data[:total_species_count] += 1
+        Datasets::BirdLife.walk_ranks_to_taxon(taxonomy_data, lineage) do
+          {
+            scientific_name: sci_name,
+            common_name: species_tax.commonname
+          }
+        end
       end
 
       Datasets::JsonWriter.write(
         "us_taxa",
         taxonomy_data,
-        dest_dir: Datasets::BirdLife::Dataset.birdlife_data_dir
+        dest_dir: Datasets::BirdLife.birdlife_data_dir
       )
     end
   end
